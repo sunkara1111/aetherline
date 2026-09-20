@@ -1,0 +1,5 @@
+# Aetherline - Industrial Signal Narrative Workbench
+User-agent: *
+Allow: /
+
+Sitemap: https://sunkara1111.github.io/aetherline/sitemap.xml
