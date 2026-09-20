@@ -3,22 +3,77 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Light mode colors */
+    --color-bg: 248 250 252;
+    --color-surface: 255 255 255;
+    --color-surface-secondary: 248 250 252;
+    --color-border: 226 232 240;
+    --color-border-hover: 203 213 225;
+    --color-text: 15 23 42;
+    --color-text-secondary: 71 85 105;
+    --color-text-muted: 148 163 184;
+    --color-accent: 20 184 166;
+    --color-accent-hover: 13 148 136;
+    --color-accent-light: 240 253 250;
+  }
+
+  .dark {
+    /* Dark mode colors - deep but soft */
+    --color-bg: 15 23 42;
+    --color-surface: 30 41 59;
+    --color-surface-secondary: 24 33 50;
+    --color-border: 51 65 85;
+    --color-border-hover: 71 85 105;
+    --color-text: 248 250 252;
+    --color-text-secondary: 203 213 225;
+    --color-text-muted: 148 163 184;
+    --color-accent: 45 212 191;
+    --color-accent-hover: 94 234 212;
+    --color-accent-light: 19 78 74;
+  }
+
   body {
-    @apply bg-hud-bg text-hud-text antialiased;
+    @apply bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50 antialiased;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
   }
 }
 
 @layer utilities {
+  .bg-surface {
+    background-color: rgb(var(--color-surface));
+  }
+  
+  .bg-surface-secondary {
+    background-color: rgb(var(--color-surface-secondary));
+  }
+
+  .border-custom {
+    border-color: rgb(var(--color-border));
+  }
+
+  .text-custom {
+    color: rgb(var(--color-text));
+  }
+
+  .text-secondary {
+    color: rgb(var(--color-text-secondary));
+  }
+
+  .text-muted {
+    color: rgb(var(--color-text-muted));
+  }
+
   .scrollbar-thin::-webkit-scrollbar {
     width: 8px;
   }
   .scrollbar-thin::-webkit-scrollbar-track {
-    @apply bg-hud-panel;
+    @apply bg-gray-100 dark:bg-slate-800;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-hud-border rounded;
+    @apply bg-gray-300 dark:bg-slate-600 rounded;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    @apply bg-hud-accent;
+    @apply bg-primary-500;
   }
 }

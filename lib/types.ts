@@ -72,3 +72,28 @@ export interface ComplianceEvent {
   tags: string[];
   data: Record<string, any>;
 }
+
+export type ConnectionType = 'demo' | 'csv' | 'webhook';
+
+export interface Company {
+  id: string;
+  name: string;
+  industry?: string;
+  notes?: string;
+  connectionType: ConnectionType;
+  csvData?: string;
+  webhookUrl?: string;
+  createdAt: number;
+  lastUpdated: number;
+}
+
+export interface CompanyUpdate {
+  id: string;
+  companyId: string;
+  timestamp: number;
+  type: 'status' | 'alarm' | 'runbook' | 'operational';
+  severity?: AlarmSeverity;
+  title: string;
+  description: string;
+  details?: string;
+}
