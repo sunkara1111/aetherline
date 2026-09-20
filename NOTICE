@@ -1,0 +1,47 @@
+# NOTICE
+
+## Aetherline - Industrial Signal Narrative Workbench
+
+This software contains original work created by Dineshgopi Sunkara.
+
+### Copyright
+
+Copyright (c) 2026 Dineshgopi Sunkara
+
+### License
+
+This project is distributed under the MIT License.
+See LICENSE file for full terms and conditions.
+
+### Educational and Training Purpose
+
+This software is designed for educational and training purposes in the field of industrial automation. The mock data generators simulate PLC/SCADA systems but do not represent any actual industrial facility or process.
+
+### Disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. The creator assumes no liability for any damages or losses arising from the use of this software.
+
+### Third-Party Dependencies
+
+This project uses open-source software licensed under their respective licenses:
+
+- Next.js - MIT License
+- React - MIT License
+- Tailwind CSS - MIT License
+- TypeScript - Apache License 2.0
+
+For complete dependency information, see package.json.
+
+### Data Privacy
+
+All signal data and mock scenarios are generated client-side. No data is transmitted to external servers or stored remotely.
+
+### Safety Notice
+
+This software is NOT certified for use in production industrial control systems. It is intended solely for visualization, training, and educational purposes.
+
+---
+
+**Created by:** Dineshgopi Sunkara  
+**Project:** Aetherline  
+**Date:** September 2026
