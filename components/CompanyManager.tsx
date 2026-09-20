@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import type { Company, ConnectionType } from '@/lib/types';
 import { parseCSVTags, validateWebhookUrl } from '@/lib/companies';
 
@@ -9,9 +10,10 @@ interface CompanyManagerProps {
   onSave: (company: Company) => void;
   onClose: () => void;
   editingCompany?: Company;
+  onDelete?: (id: string) => void;
 }
 
-export default function CompanyManager({ companies, onSave, onClose, editingCompany }: CompanyManagerProps) {
+export default function CompanyManager({ companies, onSave, onClose, editingCompany, onDelete }: CompanyManagerProps) {
   const [name, setName] = useState(editingCompany?.name || '');
   const [industry, setIndustry] = useState(editingCompany?.industry || '');
   const [notes, setNotes] = useState(editingCompany?.notes || '');
@@ -19,6 +21,7 @@ export default function CompanyManager({ companies, onSave, onClose, editingComp
   const [csvData, setCsvData] = useState(editingCompany?.csvData || '');
   const [webhookUrl, setWebhookUrl] = useState(editingCompany?.webhookUrl || '');
   const [error, setError] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,17 +63,40 @@ export default function CompanyManager({ companies, onSave, onClose, editingComp
     onSave(company);
   };
 
+  const handleDelete = () => {
+    if (editingCompany && onDelete) {
+      onDelete(editingCompany.id);
+      onClose();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-gray-200 dark:border-slate-700">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <motion.div
+        initial={{ scale: 0.95, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.95, y: 20 }}
+        className="bg-white dark:bg-industrial-900 rounded-2xl shadow-sharp-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-industrial-200 dark:border-industrial-700"
+      >
+        <div className="p-6 border-b-2 border-industrial-200 dark:border-industrial-700 bg-industrial-50 dark:bg-industrial-800">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-              {editingCompany ? 'Edit Company' : 'Connect Company'}
-            </h2>
+            <div>
+              <h2 className="text-2xl font-bold text-industrial-900 dark:text-white mb-1">
+                {editingCompany ? 'Edit Company' : 'Connect Company'}
+              </h2>
+              <p className="text-sm text-industrial-600 dark:text-industrial-400">
+                {editingCompany ? 'Update company connection details' : 'Add a new company to monitor'}
+              </p>
+            </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              className="p-2 text-industrial-600 dark:text-industrial-400 hover:text-industrial-900 dark:hover:text-white transition-colors rounded-lg hover:bg-industrial-200 dark:hover:bg-industrial-700"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -81,13 +107,17 @@ export default function CompanyManager({ companies, onSave, onClose, editingComp
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
-            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="p-4 bg-red-100 dark:bg-red-900/30 border-2 border-red-300 dark:border-red-700 rounded-xl"
+            >
+              <p className="text-sm text-red-800 dark:text-red-200 font-semibold">{error}</p>
+            </motion.div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-bold text-industrial-900 dark:text-white mb-2">
               Company Name *
             </label>
             <input
@@ -95,13 +125,13 @@ export default function CompanyManager({ companies, onSave, onClose, editingComp
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Acme Chemical Plant"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+              className="input-field w-full"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-bold text-industrial-900 dark:text-white mb-2">
               Industry
             </label>
             <input
@@ -109,12 +139,12 @@ export default function CompanyManager({ companies, onSave, onClose, editingComp
               value={industry}
               onChange={(e) => setIndustry(e.target.value)}
               placeholder="e.g., Chemical Processing, Manufacturing"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+              className="input-field w-full"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-bold text-industrial-900 dark:text-white mb-2">
               Notes
             </label>
             <textarea
@@ -122,16 +152,16 @@ export default function CompanyManager({ companies, onSave, onClose, editingComp
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Optional notes about this connection"
               rows={3}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors resize-none"
+              className="input-field w-full resize-none"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <label className="block text-sm font-bold text-industrial-900 dark:text-white mb-3">
               Connection Type
             </label>
             <div className="space-y-3">
-              <label className="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors hover:border-primary-500 dark:hover:border-primary-400 bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600">
+              <label className="flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:border-primary-500 dark:hover:border-primary-400 bg-industrial-50 dark:bg-industrial-800 border-industrial-200 dark:border-industrial-700 hover:shadow-sharp">
                 <input
                   type="radio"
                   value="demo"
@@ -140,14 +170,14 @@ export default function CompanyManager({ companies, onSave, onClose, editingComp
                   className="mt-1"
                 />
                 <div className="flex-1">
-                  <div className="font-medium text-gray-900 dark:text-white">Demo Plant</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <div className="font-bold text-industrial-900 dark:text-white">Demo Plant</div>
+                  <div className="text-sm text-industrial-600 dark:text-industrial-400 mt-1">
                     Built-in simulated process signals with mock operational updates
                   </div>
                 </div>
               </label>
 
-              <label className="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors hover:border-primary-500 dark:hover:border-primary-400 bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600">
+              <label className="flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:border-primary-500 dark:hover:border-primary-400 bg-industrial-50 dark:bg-industrial-800 border-industrial-200 dark:border-industrial-700 hover:shadow-sharp">
                 <input
                   type="radio"
                   value="csv"
@@ -156,14 +186,14 @@ export default function CompanyManager({ companies, onSave, onClose, editingComp
                   className="mt-1"
                 />
                 <div className="flex-1">
-                  <div className="font-medium text-gray-900 dark:text-white">CSV / Sample Data Upload</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <div className="font-bold text-industrial-900 dark:text-white">CSV / Sample Data Upload</div>
+                  <div className="text-sm text-industrial-600 dark:text-industrial-400 mt-1">
                     Upload tag definitions and sample data (client-side only)
                   </div>
                 </div>
               </label>
 
-              <label className="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors hover:border-primary-500 dark:hover:border-primary-400 bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600">
+              <label className="flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:border-primary-500 dark:hover:border-primary-400 bg-industrial-50 dark:bg-industrial-800 border-industrial-200 dark:border-industrial-700 hover:shadow-sharp">
                 <input
                   type="radio"
                   value="webhook"
@@ -172,8 +202,8 @@ export default function CompanyManager({ companies, onSave, onClose, editingComp
                   className="mt-1"
                 />
                 <div className="flex-1">
-                  <div className="font-medium text-gray-900 dark:text-white">Webhook / Data Feed</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <div className="font-bold text-industrial-900 dark:text-white">Webhook / Data Feed</div>
+                  <div className="text-sm text-industrial-600 dark:text-industrial-400 mt-1">
                     Connect to an external data feed URL
                   </div>
                 </div>
@@ -182,8 +212,11 @@ export default function CompanyManager({ companies, onSave, onClose, editingComp
           </div>
 
           {connectionType === 'csv' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+            >
+              <label className="block text-sm font-bold text-industrial-900 dark:text-white mb-2">
                 CSV Data
               </label>
               <textarea
@@ -191,14 +224,17 @@ export default function CompanyManager({ companies, onSave, onClose, editingComp
                 onChange={(e) => setCsvData(e.target.value)}
                 placeholder="Paste CSV data here..."
                 rows={6}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors font-mono text-sm resize-none"
+                className="input-field w-full font-mono text-sm resize-none"
               />
-            </div>
+            </motion.div>
           )}
 
           {connectionType === 'webhook' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+            >
+              <label className="block text-sm font-bold text-industrial-900 dark:text-white mb-2">
                 Webhook URL
               </label>
               <input
@@ -206,31 +242,78 @@ export default function CompanyManager({ companies, onSave, onClose, editingComp
                 value={webhookUrl}
                 onChange={(e) => setWebhookUrl(e.target.value)}
                 placeholder="https://api.example.com/data-feed"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors font-mono text-sm"
+                className="input-field w-full font-mono text-sm"
               />
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              <p className="mt-2 text-sm text-industrial-600 dark:text-industrial-400">
                 If the feed is unreachable, a &quot;waiting for feed&quot; status will be shown
               </p>
-            </div>
+            </motion.div>
           )}
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-4 border-t-2 border-industrial-200 dark:border-industrial-700">
             <button
               type="submit"
-              className="flex-1 px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white font-medium rounded-lg transition-colors shadow-sm"
+              className="flex-1 btn-primary py-3"
             >
               {editingCompany ? 'Update Company' : 'Connect Company'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-900 dark:text-white font-medium rounded-lg transition-colors"
+              className="btn-secondary py-3"
             >
               Cancel
             </button>
+            {editingCompany && onDelete && (
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="px-5 py-3 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-700 dark:text-red-300 font-semibold rounded-lg transition-all duration-200 border-2 border-red-300 dark:border-red-700"
+              >
+                Delete
+              </button>
+            )}
           </div>
         </form>
-      </div>
-    </div>
+      </motion.div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center"
+          onClick={() => setShowDeleteConfirm(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-industrial-900 rounded-xl p-6 max-w-md border-2 border-red-300 dark:border-red-700 shadow-sharp-xl"
+          >
+            <h3 className="text-xl font-bold text-industrial-900 dark:text-white mb-3">
+              Delete Company?
+            </h3>
+            <p className="text-industrial-600 dark:text-industrial-400 mb-6">
+              Are you sure you want to delete <strong>{editingCompany?.name}</strong>? This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleDelete}
+                className="flex-1 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 btn-secondary"
+              >
+                Cancel
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </motion.div>
   );
 }
