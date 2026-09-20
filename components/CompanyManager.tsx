@@ -188,7 +188,7 @@ export default function CompanyManager({ companies, onSave, onClose, editingComp
                 <div className="flex-1">
                   <div className="font-bold text-industrial-900 dark:text-white">CSV / Sample Data Upload</div>
                   <div className="text-sm text-industrial-600 dark:text-industrial-400 mt-1">
-                    Upload tag definitions and sample data (client-side only)
+                    Paste tag definitions. Valid rows drive the live canvas with in-browser simulated values (client-side only).
                   </div>
                 </div>
               </label>
@@ -222,10 +222,13 @@ export default function CompanyManager({ companies, onSave, onClose, editingComp
               <textarea
                 value={csvData}
                 onChange={(e) => setCsvData(e.target.value)}
-                placeholder="Paste CSV data here..."
+                placeholder={'id,name,unit,min,max,alarmLow,alarmHigh\nR101_TEMP,Reactor Temperature,°C,0,300,50,250'}
                 rows={6}
                 className="input-field w-full font-mono text-sm resize-none"
               />
+              <p className="mt-2 text-sm text-industrial-600 dark:text-industrial-400">
+                Required columns: id, name, unit, min, max, alarmLow, alarmHigh. Optional: description, criticalLow, criticalHigh.
+              </p>
             </motion.div>
           )}
 
@@ -245,7 +248,7 @@ export default function CompanyManager({ companies, onSave, onClose, editingComp
                 className="input-field w-full font-mono text-sm"
               />
               <p className="mt-2 text-sm text-industrial-600 dark:text-industrial-400">
-                If the feed is unreachable, a &quot;waiting for feed&quot; status will be shown
+                Stored only on this device. GitHub Pages cannot receive webhook posts, so the workbench continues with demo plant signals and shows a waiting-for-feed status in Updates.
               </p>
             </motion.div>
           )}

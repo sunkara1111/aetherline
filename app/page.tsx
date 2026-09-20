@@ -15,7 +15,8 @@ import {
   saveCurrentCompanyId, 
   loadCurrentCompanyId,
   createDefaultCompany,
-  generateCompanyUpdates 
+  generateCompanyUpdates,
+  tagsFromCompany,
 } from '@/lib/companies';
 import type { SignalData, AlarmEvent, Company, CompanyUpdate } from '@/lib/types';
 
@@ -51,10 +52,12 @@ export default function Home() {
     }
   }, []);
 
-  // Initialize signals
+  // Initialize signals from the active company (CSV tags when present)
   useEffect(() => {
-    setSignals(initializeSignalData());
-  }, []);
+    const currentCompany = companies.find(c => c.id === currentCompanyId);
+    setSignals(initializeSignalData(tagsFromCompany(currentCompany)));
+    setAlarmEvents([]);
+  }, [companies, currentCompanyId]);
 
   // Update simulation
   useEffect(() => {
@@ -84,6 +87,7 @@ export default function Home() {
   }, [alarmEvents, companies, currentCompanyId]);
 
   const currentCompany = companies.find(c => c.id === currentCompanyId);
+  const csvTags = tagsFromCompany(currentCompany);
 
   const handleSaveCompany = (company: Company) => {
     const updated = editingCompany
@@ -121,7 +125,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-white dark:bg-industrial-950 transition-colors duration-300">
+    <main className="min-h-screen flex flex-col bg-white dark:bg-industrial-950 transition-colors duration-300">
       {/* Marketing Hero Section */}
       <AnimatePresence>
         {!showWorkspace && (
@@ -129,7 +133,7 @@ export default function Home() {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, y: -50 }}
             transition={{ duration: 0.5 }}
-            className="relative min-h-screen flex flex-col"
+            className="relative flex-1 flex flex-col"
           >
             {/* Top Navigation */}
             <nav className="relative z-10 border-b border-industrial-200 dark:border-industrial-800 bg-white/80 dark:bg-industrial-950/80 backdrop-blur-lg">
@@ -182,7 +186,12 @@ export default function Home() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4, duration: 0.6 }}
                   >
-                    <span className="inline-block px-4 py-2 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full text-sm font-semibold mb-6">
+                    <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full text-sm font-semibold mb-6">
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse-soft" aria-hidden="true" />
+                        Live
+                      </span>
+                      <span className="text-primary-400 dark:text-primary-500">·</span>
                       Industrial Signal Intelligence
                     </span>
                     <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold text-industrial-900 dark:text-white mb-6 leading-tight">
@@ -210,6 +219,11 @@ export default function Home() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                       </svg>
                     </button>
+                    <p className="text-sm text-industrial-500 dark:text-industrial-400 max-w-xl">
+                      Created by <span className="font-semibold text-industrial-700 dark:text-industrial-200">Dineshgopi Sunkara</span>
+                      <span className="mx-1.5">·</span>
+                      Senior Controls Engineer · Automation Engineer
+                    </p>
                   </motion.div>
 
                   {/* Feature Highlights */}
@@ -281,6 +295,7 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
+            className="flex-1"
           >
             {/* Sticky Header */}
             <header className="sticky top-0 z-40 border-b border-industrial-200 dark:border-industrial-800 bg-white/95 dark:bg-industrial-950/95 backdrop-blur-lg">
@@ -373,6 +388,15 @@ export default function Home() {
                     </button>
                     <button
                       onClick={() => {
+                        setEditingCompany(currentCompany);
+                        setShowCompanyManager(true);
+                      }}
+                      className="btn-secondary text-sm"
+                    >
+                      Edit Company
+                    </button>
+                    <button
+                      onClick={() => {
                         setEditingCompany(undefined);
                         setShowCompanyManager(true);
                       }}
@@ -387,6 +411,21 @@ export default function Home() {
 
             {/* Main Workspace Content */}
             <div className="container mx-auto px-6 py-8">
+              {currentCompany?.connectionType === 'webhook' && (
+                <div className="mb-6 rounded-xl border-2 border-accent-300 dark:border-accent-800 bg-accent-50 dark:bg-accent-950/40 px-4 py-3 text-sm text-industrial-700 dark:text-industrial-300">
+                  Webhook URL stored locally on this device. This GitHub Pages site cannot receive feed posts, so the workbench keeps running demo plant signals.
+                </div>
+              )}
+              {currentCompany?.connectionType === 'csv' && !csvTags && (
+                <div className="mb-6 rounded-xl border-2 border-primary-300 dark:border-primary-800 bg-primary-50 dark:bg-primary-950/30 px-4 py-3 text-sm text-industrial-700 dark:text-industrial-300">
+                  CSV connection is saved locally. Add a header plus tag rows to drive the canvas; until then the demo plant signals stay on.
+                </div>
+              )}
+              {currentCompany?.connectionType === 'csv' && !!csvTags && (
+                <div className="mb-6 rounded-xl border-2 border-industrial-200 dark:border-industrial-700 bg-industrial-50 dark:bg-industrial-900 px-4 py-3 text-sm text-industrial-700 dark:text-industrial-300">
+                  Live canvas is simulating the {csvTags.length} tag{csvTags.length === 1 ? '' : 's'} from this company&apos;s CSV. Values are generated in-browser — not a plant feed.
+                </div>
+              )}
               {showUpdates && currentCompany ? (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -450,31 +489,29 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* Footer */}
-      {showWorkspace && (
-        <footer className="border-t border-industrial-200 dark:border-industrial-800 bg-industrial-50 dark:bg-industrial-900 mt-12">
-          <div className="container mx-auto px-6 py-8">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="text-center md:text-left">
-                <div className="font-semibold text-industrial-900 dark:text-white mb-1">
-                  Aetherline v2.0.0
-                </div>
-                <div className="text-sm text-industrial-600 dark:text-industrial-400">
-                  © Dineshgopi Sunkara
-                </div>
-                <div className="text-xs text-industrial-500 dark:text-industrial-500 mt-1">
-                  Senior Controls Engineer · Automation Engineer
-                </div>
+      {/* Footer — visible on the public landing page and the workbench */}
+      <footer className="mt-auto border-t border-industrial-200 dark:border-industrial-800 bg-industrial-50 dark:bg-industrial-900">
+        <div className="container mx-auto px-6 py-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="text-center md:text-left">
+              <div className="font-semibold text-industrial-900 dark:text-white mb-1">
+                Aetherline v2.0.0
               </div>
-              <div className="flex flex-col items-center md:items-end text-center md:text-right text-xs text-industrial-500 dark:text-industrial-500 space-y-1">
-                <div>Client-side only • No API keys required</div>
-                <div>Mock process data • Educational purposes</div>
-                <div className="text-primary-600 dark:text-primary-400 font-medium">MIT License</div>
+              <div className="text-sm text-industrial-600 dark:text-industrial-400">
+                © Dineshgopi Sunkara
+              </div>
+              <div className="text-xs text-industrial-500 dark:text-industrial-500 mt-1">
+                Senior Controls Engineer · Automation Engineer
               </div>
             </div>
+            <div className="flex flex-col items-center md:items-end text-center md:text-right text-xs text-industrial-500 dark:text-industrial-500 space-y-1">
+              <div>Client-side only • No API keys required</div>
+              <div>Mock process data • Educational purposes • Not for production control</div>
+              <div className="text-primary-600 dark:text-primary-400 font-medium">MIT License</div>
+            </div>
           </div>
-        </footer>
-      )}
+        </div>
+      </footer>
 
       {/* Company Manager Modal */}
       {showCompanyManager && (

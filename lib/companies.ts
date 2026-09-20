@@ -1,4 +1,4 @@
-import type { Company, CompanyUpdate, AlarmEvent, AlarmSeverity } from './types';
+import type { Company, CompanyUpdate, AlarmEvent, AlarmSeverity, SignalTag } from './types';
 
 const STORAGE_KEY = 'aetherline-companies';
 const CURRENT_COMPANY_KEY = 'aetherline-current-company';
@@ -108,13 +108,111 @@ export function generateCompanyUpdates(
   return updates.slice(0, 50);
 }
 
-export function parseCSVTags(csvContent: string): { success: boolean; error?: string } {
-  // Simple CSV validation - in a real app, this would parse and validate tag structure
-  const lines = csvContent.trim().split('\n');
-  if (lines.length < 2) {
-    return { success: false, error: 'CSV must contain header and at least one data row' };
+export interface ParsedCsvTags {
+  success: boolean;
+  error?: string;
+  tags?: SignalTag[];
+}
+
+function splitCsvLine(line: string): string[] {
+  const cells: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      cells.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
   }
-  return { success: true };
+  cells.push(current.trim());
+  return cells;
+}
+
+function parseOptionalNumber(value: string | undefined): number | undefined {
+  if (value === undefined || value === '') return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+export function parseCSVTags(csvContent: string): ParsedCsvTags {
+  const lines = csvContent
+    .trim()
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(line => line.length > 0 && !line.startsWith('#'));
+
+  if (lines.length < 2) {
+    return { success: false, error: 'CSV must contain a header row and at least one tag row' };
+  }
+
+  const headers = splitCsvLine(lines[0]).map(header => header.replace(/^\uFEFF/, '').toLowerCase());
+  const required = ['id', 'name', 'unit', 'min', 'max', 'alarmlow', 'alarmhigh'];
+  const missing = required.filter(column => !headers.includes(column));
+  if (missing.length > 0) {
+    return {
+      success: false,
+      error: `CSV header must include: id, name, unit, min, max, alarmLow, alarmHigh`,
+    };
+  }
+
+  const tags: SignalTag[] = [];
+
+  for (let rowIndex = 1; rowIndex < lines.length; rowIndex++) {
+    const cells = splitCsvLine(lines[rowIndex]);
+    const row: Record<string, string> = {};
+    headers.forEach((header, index) => {
+      row[header] = cells[index] ?? '';
+    });
+
+    const min = Number(row.min);
+    const max = Number(row.max);
+    const alarmLow = Number(row.alarmlow);
+    const alarmHigh = Number(row.alarmhigh);
+
+    if (!row.id || !row.name || !row.unit) {
+      return { success: false, error: `Row ${rowIndex + 1} is missing id, name, or unit` };
+    }
+    if (![min, max, alarmLow, alarmHigh].every(Number.isFinite)) {
+      return { success: false, error: `Row ${rowIndex + 1} has non-numeric min, max, alarmLow, or alarmHigh` };
+    }
+    if (min >= max) {
+      return { success: false, error: `Row ${rowIndex + 1} min must be less than max` };
+    }
+
+    tags.push({
+      id: row.id,
+      name: row.name,
+      description: row.description || row.name,
+      unit: row.unit,
+      min,
+      max,
+      alarmLow,
+      alarmHigh,
+      criticalLow: parseOptionalNumber(row.criticallow),
+      criticalHigh: parseOptionalNumber(row.criticalhigh),
+    });
+  }
+
+  return { success: true, tags };
+}
+
+export function tagsFromCompany(company?: Company | null): SignalTag[] | undefined {
+  if (!company || company.connectionType !== 'csv' || !company.csvData?.trim()) {
+    return undefined;
+  }
+  const parsed = parseCSVTags(company.csvData);
+  return parsed.success ? parsed.tags : undefined;
 }
 
 export function validateWebhookUrl(url: string): { valid: boolean; error?: string } {

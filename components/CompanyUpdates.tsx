@@ -94,7 +94,7 @@ export default function CompanyUpdates({ company, updates }: CompanyUpdatesProps
             Waiting for Data Feed
           </h3>
           <p className="text-industrial-600 dark:text-industrial-400 mb-5">
-            Monitoring webhook endpoint for updates
+            URL saved on this device. GitHub Pages cannot receive webhook posts, so no live feed will arrive here.
           </p>
           <code className="inline-block px-4 py-2 bg-industrial-100 dark:bg-industrial-900 text-industrial-800 dark:text-industrial-300 rounded-lg text-sm font-mono break-all border-2 border-industrial-300 dark:border-industrial-700">
             {company.webhookUrl}
