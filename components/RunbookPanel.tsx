@@ -15,12 +15,16 @@ export default function RunbookPanel({ alarmEvents }: RunbookPanelProps) {
   const [autoGenerate, setAutoGenerate] = useState(true);
 
   useEffect(() => {
-    if (autoGenerate && alarmEvents.length > 0) {
-      const generated = generateRunbooks(alarmEvents);
-      setRunbooks(generated);
-      if (generated.length > 0 && !selectedRunbook) {
-        setSelectedRunbook(generated[0]);
-      }
+    if (!autoGenerate) return;
+    if (alarmEvents.length === 0) {
+      setRunbooks([]);
+      setSelectedRunbook(null);
+      return;
+    }
+    const generated = generateRunbooks(alarmEvents);
+    setRunbooks(generated);
+    if (generated.length > 0 && !selectedRunbook) {
+      setSelectedRunbook(generated[0]);
     }
   }, [alarmEvents, autoGenerate, selectedRunbook]);
 

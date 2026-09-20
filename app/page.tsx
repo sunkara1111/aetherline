@@ -100,6 +100,9 @@ export default function Home() {
     if (!editingCompany) {
       setCurrentCompanyId(company.id);
       saveCurrentCompanyId(company.id);
+      setCompanyUpdates([]);
+    } else if (editingCompany.connectionType !== company.connectionType) {
+      setCompanyUpdates([]);
     }
     
     setShowCompanyManager(false);
@@ -208,7 +211,7 @@ export default function Home() {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6, duration: 0.6 }}
-                    className="flex flex-col sm:flex-row items-center justify-center gap-4"
+                    className="flex flex-col items-center justify-center gap-4"
                   >
                     <button
                       onClick={() => setShowWorkspace(true)}
@@ -470,7 +473,7 @@ export default function Home() {
                       transition={{ delay: 0.2, duration: 0.4 }}
                       className="card-elevated p-6"
                     >
-                      <RunbookPanel alarmEvents={alarmEvents} />
+                      <RunbookPanel key={currentCompanyId || 'demo'} alarmEvents={alarmEvents} />
                     </motion.div>
                   </div>
 
@@ -480,7 +483,7 @@ export default function Home() {
                     transition={{ delay: 0.3, duration: 0.4 }}
                     className="card-elevated p-6"
                   >
-                    <EventTimeline alarmEvents={alarmEvents} />
+                    <EventTimeline key={`timeline-${currentCompanyId || 'demo'}`} alarmEvents={alarmEvents} />
                   </motion.div>
                 </motion.div>
               )}
