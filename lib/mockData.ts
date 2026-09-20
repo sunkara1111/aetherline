@@ -177,8 +177,9 @@ export function updateSignalData(signalData: SignalData[]): SignalData[] {
   });
 }
 
-export function initializeSignalData(): SignalData[] {
-  return MOCK_TAGS.map(tag => {
+export function initializeSignalData(tags: SignalTag[] = MOCK_TAGS): SignalData[] {
+  const source = tags.length > 0 ? tags : MOCK_TAGS;
+  return source.map(tag => {
     const history = generateSignalHistory(tag);
     const currentValue = history[history.length - 1].value;
     const inAlarm = currentValue < tag.alarmLow || currentValue > tag.alarmHigh;

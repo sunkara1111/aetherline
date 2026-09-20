@@ -15,10 +15,9 @@ function generateComplianceEvents(alarmEvents: AlarmEvent[]): ComplianceEvent[] 
     id: `shift_${Date.now()}`,
     timestamp: Date.now() - 7200000,
     type: 'shift_change',
-    user: 'Operator A. Johnson',
-    description: 'Shift start - Day shift beginning',
-    tags: ['SHIFT', 'PERSONNEL'],
-    data: { shift: 'day', operator: 'A. Johnson' },
+    description: 'Simulated shift start — demo plant, no named operator',
+    tags: ['SHIFT', 'DEMO'],
+    data: { shift: 'day', source: 'demo' },
   });
   
   alarmEvents.forEach(event => {
@@ -44,7 +43,7 @@ function generateComplianceEvents(alarmEvents: AlarmEvent[]): ComplianceEvent[] 
         id: `ack_${event.id}`,
         timestamp: event.acknowledgedAt || event.timestamp + 60000,
         type: 'acknowledgment',
-        user: event.acknowledgedBy || 'Operator A. Johnson',
+        user: event.acknowledgedBy || 'Demo operator',
         description: `Alarm acknowledged: ${event.tagName}`,
         tags: [event.tagId, 'ACK'],
         data: {
@@ -76,7 +75,7 @@ export default function EventTimeline({ alarmEvents }: EventTimelineProps) {
   const exportJSON = () => {
     const data = {
       exportedAt: new Date().toISOString(),
-      facility: 'Industrial Plant - Reactor Area',
+      facility: 'Demo Plant — Reactor Area',
       events: filteredEvents,
       summary: {
         totalEvents: filteredEvents.length,
@@ -176,7 +175,7 @@ export default function EventTimeline({ alarmEvents }: EventTimelineProps) {
   <div class="header">
     <h1>Aetherline Compliance Report</h1>
     <div class="meta">
-      <div>Facility: Industrial Plant - Reactor Area</div>
+      <div>Facility: Demo Plant — Reactor Area</div>
       <div>Generated: ${new Date().toLocaleString()}</div>
       <div>Report Period: ${filteredEvents.length > 0 ? new Date(filteredEvents[filteredEvents.length - 1].timestamp).toLocaleString() : 'N/A'} - ${filteredEvents.length > 0 ? new Date(filteredEvents[0].timestamp).toLocaleString() : 'N/A'}</div>
     </div>
@@ -209,7 +208,7 @@ export default function EventTimeline({ alarmEvents }: EventTimelineProps) {
   <div class="footer">
     <div><strong>Aetherline</strong> - Industrial Signal Narrative Workbench</div>
     <div style="margin-top: 8px;">© Dineshgopi Sunkara - Senior Controls Engineer · Automation Engineer</div>
-    <div style="margin-top: 4px;">This is an official compliance record. Retain per regulatory requirements.</div>
+    <div style="margin-top: 4px;">Educational demo export. Mock process data — not a production compliance record.</div>
   </div>
 </body>
 </html>`;
