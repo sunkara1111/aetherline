@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import type { ComplianceEvent, AlarmEvent } from '@/lib/types';
 
 interface EventTimelineProps {
@@ -104,27 +105,27 @@ export default function EventTimeline({ alarmEvents }: EventTimelineProps) {
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { 
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: Inter, system-ui, -apple-system, sans-serif;
       background: white; 
-      color: #000; 
+      color: #0f172a; 
       padding: 40px; 
       line-height: 1.6;
     }
     .header { 
-      border-bottom: 3px solid #14b8a6; 
+      border-bottom: 3px solid #f3770b; 
       padding-bottom: 20px; 
       margin-bottom: 30px; 
     }
-    .header h1 { font-size: 28px; margin-bottom: 10px; color: #0f172a; }
+    .header h1 { font-size: 28px; margin-bottom: 10px; color: #0f172a; font-weight: 700; }
     .header .meta { font-size: 14px; color: #64748b; }
     .summary { 
-      background: #f1f5f9; 
+      background: #f8fafc; 
       padding: 20px; 
-      border-left: 4px solid #14b8a6; 
+      border-left: 4px solid #f3770b; 
       margin-bottom: 30px;
       border-radius: 8px;
     }
-    .summary h2 { font-size: 18px; margin-bottom: 12px; color: #1e293b; }
+    .summary h2 { font-size: 18px; margin-bottom: 12px; color: #1e293b; font-weight: 600; }
     .summary .stat { display: inline-block; margin-right: 30px; font-size: 14px; }
     .event { 
       padding: 16px; 
@@ -134,9 +135,9 @@ export default function EventTimeline({ alarmEvents }: EventTimelineProps) {
       border-radius: 8px;
       background: #fafafa;
     }
-    .event.alarm { border-left-color: #f97316; background: #fff7ed; }
+    .event.alarm { border-left-color: #f3770b; background: #fff7ed; }
     .event.critical { border-left-color: #dc2626; background: #fef2f2; }
-    .event.action { border-left-color: #3b82f6; background: #eff6ff; }
+    .event.action { border-left-color: #06b6d4; background: #ecfeff; }
     .event .time { font-size: 12px; color: #64748b; font-weight: 600; }
     .event .type { 
       display: inline-block; 
@@ -194,7 +195,7 @@ export default function EventTimeline({ alarmEvents }: EventTimelineProps) {
       <div class="event ${event.type === 'alarm' ? (event.severity === 'critical' ? 'critical' : 'alarm') : 'action'}">
         <div class="time">${new Date(event.timestamp).toLocaleString()}</div>
         <div class="type">${event.type.toUpperCase()}</div>
-        ${event.severity ? `<div class="type" style="background: ${event.severity === 'critical' ? '#dc2626' : '#f97316'};">${event.severity.toUpperCase()}</div>` : ''}
+        ${event.severity ? `<div class="type" style="background: ${event.severity === 'critical' ? '#dc2626' : '#f3770b'};">${event.severity.toUpperCase()}</div>` : ''}
         <div class="desc">${event.description}</div>
         ${event.user ? `<div class="tags">User: ${event.user}</div>` : ''}
         <div class="tags">Tags: ${event.tags.join(', ')}</div>
@@ -231,16 +232,21 @@ export default function EventTimeline({ alarmEvents }: EventTimelineProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Event Timeline
-        </h2>
+        <div>
+          <h2 className="text-2xl font-bold text-industrial-900 dark:text-white mb-1">
+            Event Timeline
+          </h2>
+          <p className="text-sm text-industrial-600 dark:text-industrial-400">
+            Comprehensive compliance logging and audit trail
+          </p>
+        </div>
         <div className="flex items-center gap-3">
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as any)}
-            className="px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+            className="input-field text-sm"
           >
             <option value="all">All Events</option>
             <option value="alarm">Alarms Only</option>
@@ -248,95 +254,114 @@ export default function EventTimeline({ alarmEvents }: EventTimelineProps) {
           </select>
           <button
             onClick={exportJSON}
-            className="px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 hover:border-primary-500 dark:hover:border-primary-400 text-gray-900 dark:text-white font-medium text-sm rounded-lg transition-colors"
+            className="btn-secondary text-sm flex items-center gap-2"
           >
-            Export JSON
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+            JSON
           </button>
           <button
             onClick={exportHTML}
-            className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white font-medium text-sm rounded-lg transition-colors shadow-sm"
+            className="btn-primary text-sm flex items-center gap-2"
           >
-            Export HTML
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            HTML
           </button>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-soft dark:shadow-soft-dark p-5">
-        <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''} • 
-          Newest first
+      <div className="bg-industrial-50 dark:bg-industrial-800/50 border-2 border-industrial-200 dark:border-industrial-700 rounded-xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="badge badge-primary">
+            {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''}
+          </div>
+          <div className="text-xs text-industrial-600 dark:text-industrial-400 font-medium">
+            Newest first
+          </div>
         </div>
         
-        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin">
+        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 scrollbar-custom">
           {filteredEvents.length === 0 ? (
-            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-              <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-              </svg>
-              <p>No events to display</p>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-12"
+            >
+              <div className="w-16 h-16 bg-industrial-200 dark:bg-industrial-700 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-industrial-500 dark:text-industrial-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                </svg>
+              </div>
+              <p className="text-industrial-600 dark:text-industrial-400 font-medium">No events to display</p>
+            </motion.div>
           ) : (
             filteredEvents.map((event, idx) => (
-              <div
+              <motion.div
                 key={event.id}
-                className={`relative border-l-4 pl-4 py-3 rounded-r-lg transition-colors ${
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.02 }}
+                className={`relative border-l-4 pl-5 py-4 rounded-r-xl transition-all hover:scale-[1.01] ${
                   event.severity === 'critical'
-                    ? 'border-red-500 bg-red-50 dark:bg-red-900/10'
+                    ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
                     : event.type === 'alarm'
-                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/10'
-                    : 'border-blue-500 bg-blue-50 dark:bg-blue-900/10'
+                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                    : 'border-accent-500 bg-accent-50 dark:bg-accent-900/20'
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className="text-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xl">
                         {eventTypeIcons[event.type] || '•'}
                       </span>
-                      <span className={`text-xs font-semibold uppercase px-2.5 py-1 rounded-full ${
+                      <span className={`badge text-[10px] ${
                         event.type === 'alarm'
-                          ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
-                          : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                          ? 'badge-primary'
+                          : 'badge-accent'
                       }`}>
-                        {event.type.replace('_', ' ')}
+                        {event.type.replace('_', ' ').toUpperCase()}
                       </span>
                       {event.severity && (
-                        <span className={`text-xs font-semibold uppercase px-2.5 py-1 rounded-full ${
+                        <span className={`badge text-[10px] ${
                           event.severity === 'critical'
-                            ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                            : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
+                            ? 'badge-warning'
+                            : 'badge-primary'
                         }`}>
-                          {event.severity}
+                          {event.severity.toUpperCase()}
                         </span>
                       )}
                     </div>
-                    <div className="text-sm text-gray-900 dark:text-white font-medium mb-1">
+                    <div className="text-sm text-industrial-900 dark:text-white font-bold mb-2">
                       {event.description}
                     </div>
                     {event.user && (
-                      <div className="text-xs text-gray-600 dark:text-gray-400">
-                        User: {event.user}
+                      <div className="text-xs text-industrial-600 dark:text-industrial-400 mb-2">
+                        <span className="font-semibold">User:</span> {event.user}
                       </div>
                     )}
-                    <div className="flex flex-wrap gap-1.5 mt-2">
+                    <div className="flex flex-wrap gap-1.5">
                       {event.tags.map(tag => (
                         <span
                           key={tag}
-                          className="text-xs px-2 py-0.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded text-gray-700 dark:text-gray-300"
+                          className="text-[10px] px-2 py-1 bg-white dark:bg-industrial-900 border border-industrial-300 dark:border-industrial-600 rounded text-industrial-700 dark:text-industrial-300 font-bold uppercase tracking-wider"
                         >
                           {tag}
                         </span>
                       ))}
                     </div>
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 text-right flex-shrink-0">
+                  <div className="text-xs text-industrial-500 dark:text-industrial-400 text-right flex-shrink-0 font-mono">
                     <div>{new Date(event.timestamp).toLocaleDateString()}</div>
-                    <div className="font-semibold">
+                    <div className="font-bold text-industrial-900 dark:text-white">
                       {new Date(event.timestamp).toLocaleTimeString()}
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))
           )}
         </div>

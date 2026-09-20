@@ -1,13 +1,14 @@
 'use client';
 
 import { useMemo } from 'react';
+import { motion } from 'framer-motion';
 import type { SignalData } from '@/lib/types';
 
 interface SignalCanvasProps {
   signals: SignalData[];
 }
 
-function Sparkline({ data, width = 120, height = 40, color = '#14b8a6' }: {
+function Sparkline({ data, width = 120, height = 40, color = '#06b6d4' }: {
   data: number[];
   width?: number;
   height?: number;
@@ -35,8 +36,10 @@ function Sparkline({ data, width = 120, height = 40, color = '#14b8a6' }: {
         d={path}
         fill="none"
         stroke={color}
-        strokeWidth="2"
+        strokeWidth="2.5"
         vectorEffect="non-scaling-stroke"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
@@ -44,123 +47,134 @@ function Sparkline({ data, width = 120, height = 40, color = '#14b8a6' }: {
 
 export default function SignalCanvas({ signals }: SignalCanvasProps) {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Live Signal Monitoring
-        </h2>
-        <div className="flex gap-4 text-xs text-gray-600 dark:text-gray-400">
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-industrial-900 dark:text-white mb-1">
+            Live Signal Monitoring
+          </h2>
+          <p className="text-sm text-industrial-600 dark:text-industrial-400">
+            Real-time process variables and alarm states
+          </p>
+        </div>
+        <div className="flex gap-4 text-xs text-industrial-600 dark:text-industrial-400">
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
-            <span>Critical</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />
-            <span>High</span>
+            <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse-soft" />
+            <span className="font-medium">Critical</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 bg-primary-500 rounded-full" />
-            <span>Normal</span>
+            <span className="font-medium">High</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 bg-accent-500 rounded-full" />
+            <span className="font-medium">Normal</span>
           </div>
         </div>
       </div>
       
-      <div className="grid gap-3">
-        {signals.map((signal) => {
+      <div className="grid gap-4">
+        {signals.map((signal, index) => {
           const values = signal.history.map(p => p.value);
           const trend = signal.history.length >= 2
             ? signal.history[signal.history.length - 1].value - signal.history[signal.history.length - 2].value
             : 0;
           
-          let sparklineColor = '#14b8a6';
-          let bgClass = 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700';
+          let sparklineColor = '#06b6d4';
+          let bgClass = 'bg-industrial-50 dark:bg-industrial-800/50 border-industrial-200 dark:border-industrial-700';
+          let valueColor = 'text-accent-600 dark:text-accent-400';
           
           if (signal.inAlarm) {
             if (signal.alarmSeverity === 'critical') {
               sparklineColor = '#dc2626';
-              bgClass = 'bg-red-50 dark:bg-red-900/10 border-red-300 dark:border-red-800';
+              bgClass = 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700';
+              valueColor = 'text-red-600 dark:text-red-400';
             } else {
-              sparklineColor = '#f97316';
-              bgClass = 'bg-orange-50 dark:bg-orange-900/10 border-orange-300 dark:border-orange-800';
+              sparklineColor = '#f3770b';
+              bgClass = 'bg-primary-50 dark:bg-primary-900/20 border-primary-300 dark:border-primary-700';
+              valueColor = 'text-primary-600 dark:text-primary-400';
             }
           }
           
           return (
-            <div
+            <motion.div
               key={signal.tag.id}
-              className={`relative rounded-xl border shadow-soft dark:shadow-soft-dark p-4 transition-all hover:shadow-soft-lg dark:hover:shadow-soft-lg-dark ${bgClass}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className={`relative rounded-xl border-2 shadow-sharp dark:shadow-sharp-dark p-5 transition-all hover:shadow-sharp-lg dark:hover:shadow-sharp-dark-lg hover:scale-[1.01] ${bgClass}`}
             >
-              <div className="grid grid-cols-[1fr_auto_auto] gap-4 items-center">
+              <div className="grid grid-cols-[1fr_auto_auto] gap-6 items-center">
                 <div className="min-w-0">
-                  <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                  <div className="text-base font-bold text-industrial-900 dark:text-white truncate mb-1">
                     {signal.tag.id}
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                  <div className="text-sm text-industrial-600 dark:text-industrial-400 truncate mb-3">
                     {signal.tag.description}
                   </div>
-                  <div className="flex gap-3 mt-2 text-xs text-gray-500 dark:text-gray-500">
-                    <span>Low: {signal.tag.alarmLow}</span>
-                    <span>High: {signal.tag.alarmHigh}</span>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-industrial-500 dark:text-industrial-500 font-mono">
+                    <span className="font-medium">L: {signal.tag.alarmLow}</span>
+                    <span className="font-medium">H: {signal.tag.alarmHigh}</span>
                     {signal.tag.criticalLow && (
-                      <span className="text-red-600 dark:text-red-400">CL: {signal.tag.criticalLow}</span>
+                      <span className="text-red-600 dark:text-red-400 font-bold">CL: {signal.tag.criticalLow}</span>
                     )}
                     {signal.tag.criticalHigh && (
-                      <span className="text-red-600 dark:text-red-400">CH: {signal.tag.criticalHigh}</span>
+                      <span className="text-red-600 dark:text-red-400 font-bold">CH: {signal.tag.criticalHigh}</span>
                     )}
                   </div>
                 </div>
                 
-                <div className="flex flex-col items-end">
-                  <div className={`text-2xl font-bold tabular-nums ${
-                    signal.inAlarm
-                      ? signal.alarmSeverity === 'critical'
-                        ? 'text-red-600 dark:text-red-400'
-                        : 'text-orange-600 dark:text-orange-400'
-                      : 'text-primary-600 dark:text-primary-400'
-                  }`}>
+                <div className="flex flex-col items-end gap-1">
+                  <div className={`text-3xl font-bold tabular-nums ${valueColor}`}>
                     {signal.currentValue.toFixed(2)}
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                  <div className="text-xs text-industrial-500 dark:text-industrial-400 font-semibold uppercase tracking-wider">
                     {signal.tag.unit}
                   </div>
                   {trend !== 0 && (
-                    <div className={`text-xs font-medium mt-1 flex items-center gap-1 ${
-                      trend > 0 ? 'text-orange-500 dark:text-orange-400' : 'text-blue-500 dark:text-blue-400'
+                    <div className={`text-sm font-bold mt-1 flex items-center gap-1 ${
+                      trend > 0 ? 'text-primary-600 dark:text-primary-400' : 'text-accent-600 dark:text-accent-400'
                     }`}>
-                      <span>{trend > 0 ? '↑' : '↓'}</span>
+                      <span className="text-base">{trend > 0 ? '↑' : '↓'}</span>
                       <span>{Math.abs(trend).toFixed(2)}</span>
                     </div>
                   )}
                 </div>
                 
-                <div className="flex flex-col items-end gap-1">
-                  <Sparkline
-                    data={values}
-                    width={140}
-                    height={50}
-                    color={sparklineColor}
-                  />
-                  <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                <div className="flex flex-col items-end gap-2">
+                  <div className="bg-white dark:bg-industrial-900 rounded-lg p-2">
+                    <Sparkline
+                      data={values}
+                      width={140}
+                      height={50}
+                      color={sparklineColor}
+                    />
+                  </div>
+                  <div className="badge badge-accent text-[10px] uppercase font-bold tracking-wider">
                     {signal.quality}
                   </div>
                 </div>
               </div>
               
               {signal.inAlarm && (
-                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-slate-700">
-                  <div className={`text-xs font-semibold flex items-center gap-2 ${
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="mt-4 pt-4 border-t-2 border-industrial-300 dark:border-industrial-600"
+                >
+                  <div className={`text-sm font-bold flex items-center gap-2 ${
                     signal.alarmSeverity === 'critical' 
                       ? 'text-red-600 dark:text-red-400' 
-                      : 'text-orange-600 dark:text-orange-400'
+                      : 'text-primary-600 dark:text-primary-400'
                   }`}>
-                    <span className={`inline-block w-2 h-2 rounded-full animate-pulse ${
-                      signal.alarmSeverity === 'critical' ? 'bg-red-500' : 'bg-orange-500'
+                    <span className={`inline-block w-3 h-3 rounded-full animate-pulse-soft ${
+                      signal.alarmSeverity === 'critical' ? 'bg-red-500 shadow-glow-primary' : 'bg-primary-500 shadow-glow-primary'
                     }`} />
-                    ALARM: {signal.currentValue < signal.tag.alarmLow ? 'LOW' : 'HIGH'}
+                    ⚠️ ALARM: {signal.currentValue < signal.tag.alarmLow ? 'LOW' : 'HIGH'}
                   </div>
-                </div>
+                </motion.div>
               )}
-            </div>
+            </motion.div>
           );
         })}
       </div>
